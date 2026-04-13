@@ -1,0 +1,8 @@
+<form method="POST">
+  <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+
+  <input type="email" name="email" placeholder="Correo"><br>
+  <input type="password" name="password" placeholder="Contraseña"><br>
+
+  <button type="submit">Iniciar sesión</button>
+</form>

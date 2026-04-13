@@ -1,0 +1,17 @@
+<h2>Crear Evento</h2>
+
+<form method="POST">
+
+  <input type="date" name="fecha"><br>
+  <input type="time" name="hora"><br>
+  <input type="text" name="direccion" placeholder="Dirección"><br>
+
+  <h3>Selecciona servicios:</h3>
+
+  {% for p in productos %}
+    <input type="checkbox" name="productos" value="{{ p.id }}">
+    {{ p.nombre }} - ${{ p.precio }}<br>
+  {% endfor %}
+
+  <button type="submit">Crear Evento</button>
+</form>
