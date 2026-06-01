@@ -1,17 +1,56 @@
-<h2>Crear Evento</h2>
+{% extends 'base.html' %}
 
-<form method="POST">
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h4 mb-0">Crear Nuevo Evento</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" name="fecha" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Hora</label>
+                            <input type="time" name="hora" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" name="direccion" class="form-control" placeholder="Ej. Calle Falsa 123" required>
+                        </div>
+                    </div>
 
-  <input type="date" name="fecha"><br>
-  <input type="time" name="hora"><br>
-  <input type="text" name="direccion" placeholder="Dirección"><br>
+                    <h4 class="mt-4 mb-3">Selecciona Servicios</h4>
+                    <div class="list-group mb-4">
+                        {% for p in productos %}
+                        <div class="list-group-item">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <input type="checkbox" name="productos" value="{{ p.id }}" class="form-check-input me-2">
+                                    <strong>{{ p.nombre }}</strong>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted">Precio: ${{ p.precio }}</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" name="cantidad_{{ p.id }}" value="1" min="1" class="form-control form-control-sm" placeholder="Cant">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" name="horas_{{ p.id }}" value="1" min="1" class="form-control form-control-sm" placeholder="Hrs">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
 
-  <h3>Selecciona servicios:</h3>
-
-  {% for p in productos %}
-    <input type="checkbox" name="productos" value="{{ p.id }}">
-    {{ p.nombre }} - ${{ p.precio }}<br>
-  {% endfor %}
-
-  <button type="submit">Crear Evento</button>
-</form>
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">Crear Evento</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

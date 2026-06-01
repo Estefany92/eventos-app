@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h2 class="h4 mb-0">Editar Evento #{{ evento.id }}</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Estado del Evento</label>
+                        <select name="estado" class="form-select">
+                            <option value="pendiente" {% if evento.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                            <option value="confirmado" {% if evento.estado == 'confirmado' %}selected{% endif %}>Confirmado</option>
+                            <option value="cancelado" {% if evento.estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100">Guardar Cambios</button>
+                    <a href="/dashboard" class="btn btn-link w-100 mt-2">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

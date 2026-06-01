@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="card-title text-primary">Panel de Control</h2>
+                <p class="text-muted">Bienvenida/o, {{ current_user.nombre }}</p>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <a href="/crear_evento" class="btn btn-primary btn-lg">
+                    + Nuevo Evento
+                </a>
+
+                {% if current_user.rol == 'admin' %}
+                <a href="/crear_producto" class="btn btn-success btn-lg">
+                    + Nuevo Producto
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <hr>
+
+        <h4 class="mb-3">Gestión de Eventos</h4>
+
+        {% if eventos %}
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha y Hora</th>
+                            <th>Dirección</th>
+                            <th>Estado</th>
+                            {% if current_user.rol == 'admin' %}
+                                <th>Cliente</th>
+                            {% endif %}
+                            <th>Servicios</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for evento in eventos %}
+                        <tr>
+                            <td>#{{ evento.id }}</td>
+                            <td>{{ evento.fecha }} a las {{ evento.hora }}</td>
+                            <td>{{ evento.direccion }}</td>
+                            <td><span class="badge bg-success">{{ evento.estado }}</span></td>
+                            
+                            {% if current_user.rol == 'admin' %}
+                                <td>{{ evento.cliente.nombre }}</td>
+                            {% endif %}
+                            
+                            <td>
+                                <ul class="list-unstyled mb-0 small">
+                                {% for detalle in evento.detalles %}
+                                    <li>✔️ {{ detalle.producto.nombre }} ({{ detalle.cantidad }})</li>
+                                {% else %}
+                                    <li class="text-muted">Sin productos</li>
+                                {% endfor %}
+                                </ul>
+                            </td>
+                            
+                            <td>
+                                {% if current_user.rol == 'admin' %}
+                                    <a href="{{ url_for('eventos.editar_evento', id=evento.id) }}" class="btn btn-sm btn-warning mb-1">Editar</a>
+                                    <form action="{{ url_for('eventos.eliminar_evento', id=evento.id) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro?')">Eliminar</button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted small">Solo lectura</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-warning text-center">
+                Aún no hay eventos registrados en el sistema.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
