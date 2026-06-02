@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-primary">Módulo de Inteligencia de Negocios</h2>
+        <p class="text-muted">Análisis de datos y rendimiento de inventario</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">Ingresos por Estado del Evento ($)</div>
+            <div class="card-body">
+                <canvas id="graficoIngresos"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">Top 5 Servicios Más Solicitados</div>
+            <div class="card-body">
+                <canvas id="graficoProductos"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-2 mb-5">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Temporadas de Mayor Demanda (Histórico)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0 text-center align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ranking</th>
+                                <th>Mes y Año</th>
+                                <th>Eventos Agendados</th>
+                                <th>Nivel de Demanda</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fila in tabla_meses %}
+                            <tr>
+                                <td><strong>#{{ loop.index }}</strong></td>
+                                <td class="text-start"><strong>{{ fila.mes }}</strong></td>
+                                <td>{{ fila.cantidad }} evento(s)</td>
+                                <td>
+                                    {% if loop.index == 1 %}
+                                        <span class="badge bg-danger p-2">🔥 Temporada Alta</span>
+                                    {% elif loop.index <= 3 %}
+                                        <span class="badge bg-warning text-dark p-2">⭐ Demanda Fuerte</span>
+                                    {% else %}
+                                        <span class="badge bg-success p-2">Estable</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">Aún no hay suficientes eventos registrados para generar el historial.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Gráfico de Ingresos (Pastel)
+    const ctxIngresos = document.getElementById('graficoIngresos').getContext('2d');
+    new Chart(ctxIngresos, {
+        type: 'pie',
+        data: {
+            labels: ['Pendiente', 'Confirmado', 'Cancelado'],
+            datasets: [{
+                data: [
+                    {{ datos_ingresos.get('pendiente', 0) | tojson }},
+                    {{ datos_ingresos.get('confirmado', 0) | tojson }},
+                    {{ datos_ingresos.get('cancelado', 0) | tojson }}
+                ],
+                backgroundColor: ['#ffc107', '#198754', '#dc3545']
+            }]
+        }
+    });
+
+    // Gráfico de Top Productos (Barras)
+    const ctxProductos = document.getElementById('graficoProductos').getContext('2d');
+    new Chart(ctxProductos, {
+        type: 'bar',
+        data: {
+            labels: {{ nombres_prod | tojson }},
+            datasets: [{
+                label: 'Unidades Alquiladas',
+                data: {{ cantidades_prod | tojson }},
+                backgroundColor: '#0d6efd'
+            }]
+        },
+        options: {
+            scales: { 
+                y: { 
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 } 
+                } 
+            }
+        }
+    });
+</script>
+{% endblock %}

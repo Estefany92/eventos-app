@@ -1,3 +1,8 @@
+# Ocultar credenciales
 .env
-venv/
+
+# Ocultar archivos temporales de Python
 __pycache__/
+*.pyc
+venv/
+env/

@@ -1,13 +1,15 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask import redirect, url_for
-
-# Importaciones de tu nueva estructura
+from flask_login import LoginManager, current_user
 from config import Config
 from models.tablas import db, Usuario
 from controllers.auth import auth_bp
 from controllers.productos import productos_bp
 from controllers.eventos import eventos_bp
+from controllers.reportes import reportes_bp 
+
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -32,8 +34,14 @@ app.register_blueprint(eventos_bp)
 
 @app.route('/')
 def home():
-    # En lugar de texto plano, redirigimos al login
+    if current_user.is_authenticated:
+        return redirect(url_for('eventos.dashboard'))
+    
+    # Si no ha iniciado sesión, va al login
     return redirect(url_for('auth.login'))
+    # En lugar de texto plano, redirigimos al login
+    
+app.register_blueprint(reportes_bp) 
 
 if __name__ == '__main__':
     app.run(debug=True)

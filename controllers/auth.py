@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models.tablas import db, Usuario
 
@@ -8,6 +8,8 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/registro', methods=['GET', 'POST'])
 def registro():
+    if current_user.is_authenticated:
+        return redirect(url_for('eventos.dashboard'))
     if request.method == 'POST':
         nombre = request.form['nombre']
         email = request.form['email']
@@ -33,6 +35,8 @@ def registro():
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('eventos.dashboard'))
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
