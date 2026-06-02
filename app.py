@@ -32,6 +32,9 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(productos_bp)
 app.register_blueprint(eventos_bp)
 
+if __name__ == '__main__':
+    app.run(debug=True)
+
 @app.route('/')
 def home():
     if current_user.is_authenticated:
@@ -43,5 +46,4 @@ def home():
     
 app.register_blueprint(reportes_bp) 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
