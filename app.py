@@ -27,7 +27,7 @@ def load_user(user_id):
     # Usamos db.session.get para asegurar que buscamos en la DB actual
     return db.session.get(Usuario, int(user_id))
 
-# 🔥 REGISTRAMOS LOS CONTROLADORES (Blueprints)
+#  REGISTRAMOS LOS CONTROLADORES (Blueprints)
 app.register_blueprint(auth_bp)
 app.register_blueprint(productos_bp)
 app.register_blueprint(eventos_bp)
