@@ -52,7 +52,7 @@
                             <td><span class="badge bg-success">{{ evento.estado }}</span></td>
                             
                             {% if current_user.rol == 'admin' %}
-                                <td>{{ evento.cliente.nombre }}</td>
+                                <td>{{ evento.usuario.nombre }}</td>
                             {% endif %}
                             
                             <td>

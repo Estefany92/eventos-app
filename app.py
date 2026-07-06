@@ -1,17 +1,21 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_login import LoginManager
 from flask import redirect, url_for
 from flask_login import LoginManager, current_user
 from config import Config
-from models.tablas import db, Usuario
+from models.tablas import *
 from controllers.auth import auth_bp
 from controllers.productos import productos_bp
 from controllers.eventos import eventos_bp
 from controllers.reportes import reportes_bp 
 
+import inspect
 
 
 app = Flask(__name__)
+# Permitimos que cualquier origen (*) acceda a las rutas que empiecen con /api/
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_object(Config)
 
 # Inicializamos Base de Datos
@@ -31,9 +35,7 @@ def load_user(user_id):
 app.register_blueprint(auth_bp)
 app.register_blueprint(productos_bp)
 app.register_blueprint(eventos_bp)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+app.register_blueprint(reportes_bp) # <-- Movido hacia arriba junto con los demás
 
 @app.route('/')
 def home():
@@ -41,9 +43,13 @@ def home():
         return redirect(url_for('eventos.dashboard'))
     
     # Si no ha iniciado sesión, va al login
+
     return redirect(url_for('auth.login'))
-    # En lugar de texto plano, redirigimos al login
-    
-app.register_blueprint(reportes_bp) 
 
+with app.app_context():
+    print("Relaciones de Evento:")
+    print(Evento.__mapper__.relationships.keys())
 
+# EL ENCENDIDO DEL SERVIDOR SIEMPRE VA AL FINAL
+if __name__ == '__main__':
+    app.run(debug=True)

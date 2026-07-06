@@ -3,46 +3,86 @@ from flask_login import UserMixin
 
 db = SQLAlchemy()
 
-# tabla USUARIOS
-class Usuario(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(100))
-    email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(300))
-    rol = db.Column(db.String(20))  # cliente / admin
-    
-    # 🔥 NUEVO: Un usuario puede tener muchos eventos
-    eventos = db.relationship('Evento', backref='cliente', lazy=True)
+class Usuario(db.Model, UserMixin):
+    __tablename__ = "usuario"
 
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120))
+    password = db.Column(db.String(200), nullable=False)
+    rol = db.Column(db.String(20), default="cliente")
+
+    eventos = db.relationship(
+        "Evento",
+        back_populates="usuario",
+        lazy=True
+    )
 
 # tabla PRODUCTOS
 class Producto(db.Model):
+    __tablename__ = 'producto'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100))
-    tipo = db.Column(db.String(50))  # maquinaria / comida
+    tipo = db.Column(db.String(50))
     precio = db.Column(db.Float)
     
-    # 🔥 NUEVO: Conectar el producto con sus detalles de alquiler
-    detalles = db.relationship('EventoDetalle', backref='producto', lazy=True)
+    detalles = db.relationship('EventoDetalle', back_populates="producto", lazy=True)
+
+    def to_dict(self):
+        return {'id': self.id, 'nombre': self.nombre, 'tipo': self.tipo, 'precio': float(self.precio)}
 
 
-# tabla EVENTO datos del evento
+# tabla EVENTO
 class Evento(db.Model):
+    __tablename__ = "evento"
+
     id = db.Column(db.Integer, primary_key=True)
-    fecha = db.Column(db.String(50))
+
+    fecha = db.Column(db.String(20))
     hora = db.Column(db.String(20))
-    direccion = db.Column(db.String(200))
-    estado = db.Column(db.String(50))  # pendiente / confirmado
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
-    
-    # 🔥 NUEVO: Un evento tiene muchos detalles (productos seleccionados)
-    detalles = db.relationship('EventoDetalle', backref='evento', lazy=True)
+    direccion = db.Column(db.String(255))
+    estado = db.Column(db.String(20))
+
+    usuario_id = db.Column(
+        db.Integer,
+        db.ForeignKey("usuario.id")
+    )
+
+    usuario = db.relationship(
+        "Usuario",
+        back_populates="eventos"
+    )
+
+    detalles = db.relationship(
+        "EventoDetalle",
+        back_populates="evento",
+        cascade="all, delete-orphan"
+    )
 
 
-# tabla DETALLE DEL EVENTO (Se queda igual, los backrefs hacen el trabajo)
+# tabla DETALLE DEL EVENTO
 class EventoDetalle(db.Model):
+    __tablename__ = 'evento_detalle'
     id = db.Column(db.Integer, primary_key=True)
     evento_id = db.Column(db.Integer, db.ForeignKey('evento.id'))
     producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'))
     cantidad = db.Column(db.Integer)
     horas = db.Column(db.Integer)
+    producto = db.relationship(
+        "Producto",
+        back_populates="detalles"
+    )
+
+    evento = db.relationship(
+        "Evento",
+        back_populates="detalles"
+    )
+    
+    def to_dict(self):
+        return {
+            'id': self.id, 
+            'evento_id': self.evento_id, 
+            'producto_id': self.producto_id, 
+            'cantidad': self.cantidad, 
+            'horas': self.horas
+        }
