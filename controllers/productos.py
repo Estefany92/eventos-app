@@ -15,7 +15,6 @@ productos_bp = Blueprint('productos', __name__)
 @productos_bp.route('/productos')
 @login_required
 def listar_productos():
-    # Usamos el repositorio para consultar todo el inventario
     productos = ProductoRepository.obtener_todos()
     return render_template('productos.html', productos=productos)
 
@@ -31,15 +30,12 @@ def crear_producto():
         precio = request.form.get('precio')
         tipo = request.form.get('tipo')
 
-        # 1. La Fábrica CREA el objeto aplicando las reglas de negocio
         nuevo_producto = ProductoFactory.crear(
-            nombre=nombre, 
-            descripcion=descripcion, 
-            precio=precio, 
+            nombre=nombre,
+            descripcion=descripcion,
+            precio=precio,
             tipo=tipo
         )
-
-        # 2. El Repositorio GUARDA el objeto en la base de datos Azure SQL
         ProductoRepository.guardar(nuevo_producto)
 
         flash("Producto creado exitosamente.")
@@ -52,26 +48,68 @@ def crear_producto():
 def eliminar_producto(id):
     if current_user.rol != 'admin':
         return "No autorizado", 403
-    
-    # Buscamos y eliminamos usando el repositorio
+
     producto = ProductoRepository.obtener_por_id(id)
     ProductoRepository.eliminar(producto)
-    
+
     flash("Producto eliminado.")
     return redirect(url_for('productos.listar_productos'))
 
 
 # ==========================================
-# RUTAS API REST (Para consumir desde React/Frontend JS)
+# RUTAS API REST (Para consumir desde React)
 # ==========================================
 
 @productos_bp.route('/api/productos', methods=['GET'])
 def api_listar_productos():
-    # 1. Pedimos los datos al repositorio de forma limpia
     productos = ProductoRepository.obtener_todos()
-    
-    # 2. Transformamos los objetos complejos a diccionarios
-    lista_json = [producto.to_dict() for producto in productos]
-    
-    # 3. Retornamos la respuesta en formato JSON puro
-    return jsonify(lista_json)
+    return jsonify([p.to_dict() for p in productos])
+
+
+@productos_bp.route('/api/productos/<int:id>', methods=['GET'])
+def api_obtener_producto(id):
+    producto = ProductoRepository.obtener_por_id(id)
+    return jsonify(producto.to_dict())
+
+
+@productos_bp.route('/api/productos', methods=['POST'])
+@login_required
+def api_crear_producto():
+    if current_user.rol != 'admin':
+        return jsonify({'error': 'No autorizado'}), 403
+
+    data = request.get_json(silent=True) or {}
+    if not data.get('nombre') or data.get('precio') is None:
+        return jsonify({'error': 'nombre y precio son requeridos'}), 400
+
+    nuevo_producto = ProductoFactory.crear(
+        nombre=data.get('nombre'),
+        descripcion=data.get('descripcion', ''),
+        precio=data.get('precio'),
+        tipo=data.get('tipo')
+    )
+    ProductoRepository.guardar(nuevo_producto)
+    return jsonify(nuevo_producto.to_dict()), 201
+
+
+@productos_bp.route('/api/productos/<int:id>', methods=['PUT'])
+@login_required
+def api_actualizar_producto(id):
+    if current_user.rol != 'admin':
+        return jsonify({'error': 'No autorizado'}), 403
+
+    producto = ProductoRepository.obtener_por_id(id)
+    data = request.get_json(silent=True) or {}
+    ProductoRepository.actualizar(producto, data)
+    return jsonify(producto.to_dict())
+
+
+@productos_bp.route('/api/productos/<int:id>', methods=['DELETE'])
+@login_required
+def api_eliminar_producto(id):
+    if current_user.rol != 'admin':
+        return jsonify({'error': 'No autorizado'}), 403
+
+    producto = ProductoRepository.obtener_por_id(id)
+    ProductoRepository.eliminar(producto)
+    return '', 204

@@ -1,14 +1,26 @@
-# 1. Usar explícitamente la versión Debian 12 (Bookworm)
+# ==========================================
+# ETAPA 1: Build del frontend React
+# ==========================================
+FROM node:20-slim AS frontend-build
+WORKDIR /frontend
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+# Esto genera /frontend/../static/react (ver outDir en vite.config.js),
+# que dentro de esta etapa queda en /static/react
+
+# ==========================================
+# ETAPA 2: Backend Flask (imagen final)
+# ==========================================
 FROM python:3.10-slim-bookworm
 
-# 2. Configurar variables de entorno
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# 3. Crear el directorio de trabajo
 WORKDIR /app
 
-# 4. Instalar dependencias con el nuevo estándar de seguridad de Microsoft
+# Dependencias de sistema + driver ODBC de Azure SQL
 RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
@@ -21,15 +33,16 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 5. Instalar librerías de Python
+# Librerías de Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
-# 6. Copiar el código
+# Código de la app (backend)
 COPY . .
 
-# 7. Exponer el puerto
+# Build de React generado en la etapa 1, lo copiamos a static/react
+COPY --from=frontend-build /static/react ./static/react
+
 EXPOSE 5000
 
-# 8. Encender el servidor
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

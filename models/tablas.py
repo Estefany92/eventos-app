@@ -18,6 +18,11 @@ class Usuario(db.Model, UserMixin):
         lazy=True
     )
 
+    def to_dict(self):
+        # OJO: nunca incluir password en el JSON
+        return {'id': self.id, 'nombre': self.nombre, 'email': self.email, 'rol': self.rol}
+
+
 # tabla PRODUCTOS
 class Producto(db.Model):
     __tablename__ = 'producto'
@@ -25,7 +30,7 @@ class Producto(db.Model):
     nombre = db.Column(db.String(100))
     tipo = db.Column(db.String(50))
     precio = db.Column(db.Float)
-    
+
     detalles = db.relationship('EventoDetalle', back_populates="producto", lazy=True)
 
     def to_dict(self):
@@ -59,6 +64,19 @@ class Evento(db.Model):
         cascade="all, delete-orphan"
     )
 
+    def to_dict(self, incluir_detalles=True):
+        data = {
+            'id': self.id,
+            'fecha': self.fecha,
+            'hora': self.hora,
+            'direccion': self.direccion,
+            'estado': self.estado,
+            'usuario_id': self.usuario_id,
+        }
+        if incluir_detalles:
+            data['detalles'] = [d.to_dict() for d in self.detalles]
+        return data
+
 
 # tabla DETALLE DEL EVENTO
 class EventoDetalle(db.Model):
@@ -77,12 +95,12 @@ class EventoDetalle(db.Model):
         "Evento",
         back_populates="detalles"
     )
-    
+
     def to_dict(self):
         return {
-            'id': self.id, 
-            'evento_id': self.evento_id, 
-            'producto_id': self.producto_id, 
-            'cantidad': self.cantidad, 
+            'id': self.id,
+            'evento_id': self.evento_id,
+            'producto_id': self.producto_id,
+            'cantidad': self.cantidad,
             'horas': self.horas
         }

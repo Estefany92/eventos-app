@@ -1,7 +1,8 @@
 from models.tablas import db, Producto
 
+
 class ProductoRepository:
-    
+
     @staticmethod
     def obtener_todos():
         """Devuelve todo el catálogo de servicios e inventario"""
@@ -17,6 +18,15 @@ class ProductoRepository:
         """Guarda un nuevo producto en la base de datos"""
         db.session.add(producto)
         db.session.commit()
+
+    @staticmethod
+    def actualizar(producto, datos):
+        """Actualiza campos de un producto existente (usado por la API)"""
+        for campo in ('nombre', 'tipo', 'precio'):
+            if campo in datos:
+                setattr(producto, campo, datos[campo])
+        db.session.commit()
+        return producto
 
     @staticmethod
     def eliminar(producto):
