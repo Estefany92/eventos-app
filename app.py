@@ -11,8 +11,11 @@ from controllers.reportes import reportes_bp
 
 import inspect
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, 'static', 'react')
+
 # static_folder: aquí caerá el build de React (frontend/dist copiado en el Dockerfile)
-app = Flask(__name__, static_folder="static/react", static_url_path="/app")
+app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="/app")
 
 # CORS con soporte de cookies de sesión.
 # En local: React corre en :5173 y Flask en :5000, son orígenes distintos.
