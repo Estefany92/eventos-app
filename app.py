@@ -25,6 +25,30 @@ app.config.from_object(Config)
 # Inicializamos Base de Datos
 db.init_app(app)
 
+with app.app_context():
+    # Esto asegura que la base de datos tenga las tablas creadas
+    db.create_all()
+    
+    # Crear usuario admin por defecto o promoverlo si ya existe
+    from werkzeug.security import generate_password_hash
+    admin_email = "admin@gmail.com"
+    admin_user = db.session.query(Usuario).filter_by(email=admin_email).first()
+    
+    if not admin_user:
+        nuevo_admin = Usuario(
+            nombre="admin",
+            email=admin_email,
+            password=generate_password_hash("admin1234"),
+            rol="admin"
+        )
+        db.session.add(nuevo_admin)
+        db.session.commit()
+        print("Usuario administrador creado exitosamente.")
+    elif admin_user.rol != "admin":
+        admin_user.rol = "admin"
+        db.session.commit()
+        print("Usuario promovido a administrador exitosamente.")
+
 # Configuración de Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -56,12 +80,6 @@ def serve_react(path=""):
         return send_from_directory(static_dir, path)
     return send_from_directory(static_dir, "index.html")
 
-
-with app.app_context():
-    print("Relaciones de Evento:")
-    print(Evento.__mapper__.relationships.keys())
-    # Crear las tablas automáticamente si no existen
-    db.create_all()
 
 # EL ENCENDIDO DEL SERVIDOR SIEMPRE VA AL FINAL
 if __name__ == '__main__':
