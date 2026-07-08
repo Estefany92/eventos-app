@@ -1,31 +1,26 @@
-import urllib
 import os
 from dotenv import load_dotenv
 
-# 👇 Esto carga las variables de tu archivo .env a la memoria
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Cargamos el .env del proyecto de forma explícita
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 class Config:
-    # 🔒 Traemos las credenciales de forma segura
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'default-secret-key-fallback')
     
-    server = os.environ.get('AZURE_SERVER')
-    database = os.environ.get('AZURE_DATABASE')
-    username = os.environ.get('AZURE_USER')
-    password = os.environ.get('AZURE_PASSWORD')
+    # DATABASE_URL es la variable estándar que inyecta Render para PostgreSQL
+    database_url = os.environ.get('DATABASE_URL')
     
-    # 🔗 Armamos la conexión a Azure inyectando las variables
-    params = urllib.parse.quote_plus(
-        "Driver={ODBC Driver 18 for SQL Server};"
-        f"Server=tcp:{server};"
-        f"Database={database};"
-        f"Uid={username};"
-        f"Pwd={password};"
-        "Encrypt=yes;"
-        "TrustServerCertificate=no;"
-        "Connection Timeout=30;"
-    )
+    if not database_url:
+        # En caso de que no haya DATABASE_URL, usamos SQLite de manera local temporalmente
+        database_url = f"sqlite:///{os.path.join(BASE_DIR, 'local.db')}"
+        print("ADVERTENCIA: No se encontró DATABASE_URL. Usando SQLite local.")
     
-    # URL de SQLAlchemy
-    SQLALCHEMY_DATABASE_URI = "mssql+pyodbc:///?odbc_connect=%s" % params
+    # SQLAlchemy (desde 1.4+) requiere que la URL empiece con 'postgresql://'
+    # pero Render a veces la pasa como 'postgres://'.
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
