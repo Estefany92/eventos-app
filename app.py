@@ -14,13 +14,9 @@ import inspect
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, 'static', 'react')
 
-# static_folder: aquí caerá el build de React (frontend/dist copiado en el Dockerfile)
-app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="/app")
+app = Flask(__name__, static_folder=STATIC_DIR)
 
 # CORS con soporte de cookies de sesión.
-# En local: React corre en :5173 y Flask en :5000, son orígenes distintos.
-# En Render: React se sirve desde el MISMO servicio Flask, por lo que ni
-# siquiera se dispara CORS ahí, pero dejamos el origen configurable por si acaso.
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:5173")
 CORS(app, resources={r"/api/*": {"origins": FRONTEND_ORIGIN}}, supports_credentials=True)
 
@@ -52,11 +48,7 @@ def home():
 # ==========================================
 # SERVIR REACT (build de producción)
 # ==========================================
-# La app de React vive en /app. Todo lo que no matchee una ruta de Flask
-# ni un archivo estático real, cae en index.html para que React Router
-# (si lo usas) resuelva la navegación del lado del cliente.
-
-@app.route('/app')
+@app.route('/app', strict_slashes=False)
 @app.route('/app/<path:path>')
 def serve_react(path=""):
     static_dir = app.static_folder
