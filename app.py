@@ -43,9 +43,7 @@ app.register_blueprint(reportes_bp)
 
 @app.route('/')
 def home():
-    if current_user.is_authenticated:
-        return redirect(url_for('eventos.dashboard'))
-    return redirect(url_for('auth.login'))
+    return redirect('/app/')
 
 
 # ==========================================
