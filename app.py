@@ -67,6 +67,8 @@ def serve_react(path=""):
 with app.app_context():
     print("Relaciones de Evento:")
     print(Evento.__mapper__.relationships.keys())
+    # Crear las tablas automáticamente si no existen
+    db.create_all()
 
 # EL ENCENDIDO DEL SERVIDOR SIEMPRE VA AL FINAL
 if __name__ == '__main__':
